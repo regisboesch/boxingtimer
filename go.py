@@ -121,8 +121,8 @@ class MyFrame(wx.Frame):
 		#Countdown label
 		self.update_countdown_label(int(settings.config['DEFAULT']['timer_in_seconds']))
 
-	def update_countdown_label(self, time_to_zero_in_seconds):
-		mins, secs = divmod(time_to_zero_in_seconds, 60)
+	def update_countdown_label(self, seconds_left_in_second):
+		mins, secs = divmod(seconds_left_in_second, 60)
 		timeformat = '{:02d}:{:02d}'.format(mins, secs)
 		self.lcdClock.SetLabel(timeformat)
 
