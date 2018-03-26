@@ -2,6 +2,9 @@
 import wx
 import MySettings
 
+# mins, secs = divmod(t, 60)
+#timeformat = '{:02d}:{:02d}'.format(mins, secs)
+
 class MyFrameSetting(wx.Frame):
 
 	def __init__(self, ground_frame):
@@ -114,6 +117,14 @@ class MyFrame(wx.Frame):
 		col_stop = wx.Colour();
 		col_stop.Set(settings.config['DEFAULT']['color_stop'])
 		self.panel.SetBackgroundColour(col_stop)
+
+		#Countdown label
+		self.update_countdown_label(int(settings.config['DEFAULT']['timer_in_seconds']))
+
+	def update_countdown_label(self, time_to_zero_in_seconds):
+		mins, secs = divmod(time_to_zero_in_seconds, 60)
+		timeformat = '{:02d}:{:02d}'.format(mins, secs)
+		self.lcdClock.SetLabel(timeformat)
 
 	def OnPressSettingsButton(self, evt):
 		settings_frame = MyFrameSetting(self)
