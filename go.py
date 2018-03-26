@@ -4,15 +4,16 @@ import MySettings
 
 class MyFrameSetting(wx.Frame):
 
-	def __init__(self):
+	def __init__(self, ground_frame):
 		wx.Frame.__init__(self, None, wx.ID_ANY, "Boxygene Settings", size=(500,500))
 		self.Centre() 
 		self.Show()
 		self.panel = wx.Panel(self)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
+		self.ground_frame = ground_frame
 
 		#Grid Settings
-		self.gs = gs = wx.GridSizer(rows=2, cols=2, hgap=5, vgap=5)
+		self.gs = gs = wx.GridSizer(rows=4, cols=2, hgap=5, vgap=5)
 		
 		#Color Pickers
 		self.colour_picker_stop = wx.ColourPickerCtrl(self.panel)
@@ -25,12 +26,27 @@ class MyFrameSetting(wx.Frame):
 		col_run.Set(settings.config['DEFAULT']['color_run'])
 		self.colour_picker_run.SetColour(col_run)
 
+		self.colour_picker_pause = wx.ColourPickerCtrl(self.panel)
+		col_pause = wx.Colour();
+		col_pause.Set(settings.config['DEFAULT']['color_pause'])
+		self.colour_picker_pause.SetColour(col_pause)
+
+
+		self.colour_picker_almostdone = wx.ColourPickerCtrl(self.panel)
+		col_almost_done = wx.Colour();
+		col_almost_done.Set(settings.config['DEFAULT']['color_almost_end'])
+		self.colour_picker_almostdone.SetColour(col_almost_done)
+
 		# Adding properties
 		self.gs.AddMany( [
 			(wx.StaticText(self.panel, -1, "Stop Color"), wx.EXPAND),
 			(self.colour_picker_stop, wx.EXPAND),
 			(wx.StaticText(self.panel, -1, "Run Color"), wx.EXPAND),
 			(self.colour_picker_run, wx.EXPAND),
+			(wx.StaticText(self.panel, -1, "Pause Color"), wx.EXPAND),
+			(self.colour_picker_pause, wx.EXPAND),
+			(wx.StaticText(self.panel, -1, "Almost Done Color"), wx.EXPAND),
+			(self.colour_picker_almostdone, wx.EXPAND),
 			])
 
 		self.sizer.Add(self.gs,0, wx.ALL|wx.EXPAND, 5)
@@ -44,7 +60,16 @@ class MyFrameSetting(wx.Frame):
 		self.panel.SetSizer(self.sizer)
 
 	def save_settings(self, evt):
-		print self.colour_picker_stop.GetColour().GetAsString()
+		#Todo saving preferences
+		settings.config['DEFAULT']['color_stop'] = self.colour_picker_stop.GetColour().GetAsString()
+		settings.config['DEFAULT']['color_run'] = self.colour_picker_run.GetColour().GetAsString()
+		settings.config['DEFAULT']['color_pause'] = self.colour_picker_pause.GetColour().GetAsString()
+		settings.config['DEFAULT']['color_almost_end'] = self.colour_picker_almostdone.GetColour().GetAsString()
+
+		settings.saveToFile()
+
+		#Reloading Display
+		self.ground_frame.update_display_settings()
 
 class MyFrame(wx.Frame):
 
@@ -80,8 +105,18 @@ class MyFrame(wx.Frame):
 
 		self.panel.SetSizer(self.sizer)
 
+		#Update Display settings
+		self.update_display_settings()
+
+	def update_display_settings(self):
+
+		#Background panel
+		col_stop = wx.Colour();
+		col_stop.Set(settings.config['DEFAULT']['color_stop'])
+		self.panel.SetBackgroundColour(col_stop)
+
 	def OnPressSettingsButton(self, evt):
-		settings_frame = MyFrameSetting()
+		settings_frame = MyFrameSetting(self)
 		settings_frame.Show()
 
 if __name__ == "__main__":
