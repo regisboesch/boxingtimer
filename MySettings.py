@@ -13,7 +13,8 @@ class MySettings:
 		'color_stop' : 'black',
 		'color_run' : 'green',
 		'color_pause' : 'red',
-		'color_almost_end' : 'yellow'}
+		'color_almost_end' : 'yellow',
+		'logo' : 'logo.png'}
 		self.filename = "boxing.ini"
 
 	def loadFromFile(self):
