@@ -250,14 +250,16 @@ class MyFrame(wx.Frame):
 			#Reset
 			self.reset()
 
-	#TODO : save old_status
+	#Save old_status too when Pausing
 	def OnPressPauseButton(self, evt):
-		if self.timer_state == TimerState.RUN :
+
+		if self.timer_state == TimerState.PAUSE :
+			self.timer_state = self.timer_state_old
+			self.pauseBtn.SetLabel("Pause")
+		else :
+			self.timer_state_old = self.timer_state
 			self.timer_state = TimerState.PAUSE
 			self.pauseBtn.SetLabel("Resume")
-		else :
-			self.timer_state = TimerState.RUN
-			self.pauseBtn.SetLabel("Pause")
 
 	def on_update_timer(self, event) :
 		
