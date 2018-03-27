@@ -1,6 +1,13 @@
 # First things, first. Import the wxPython package.
 import wx
 import MySettings
+from enum import Enum
+
+class TimerState(Enum):
+	STOP = 1
+	RUN = 2
+	PAUSE = 3
+	ALMOST_END = 4
 
 class MyFrameSetting(wx.Frame):
 
@@ -104,7 +111,7 @@ class MyFrameSetting(wx.Frame):
 		settings.saveToFile()
 
 		#Reloading Display
-		self.ground_frame.update_display_settings()
+		self.ground_frame.update_display_after_settings()
 
 class MyFrame(wx.Frame):
 
@@ -126,6 +133,11 @@ class MyFrame(wx.Frame):
 		self.fontLcdClock = wx.Font(440, wx.DECORATIVE, wx.ITALIC, wx.NORMAL)
 		self.lcdClock.SetFont(self.fontLcdClock)
 
+		#Number of round
+		self.numberRound = wx.StaticText(self.panel, -1, "00:00", style=wx.ALIGN_CENTER)
+		self.fontNumberRound = wx.Font(140, wx.DECORATIVE,  wx.NORMAL, wx.NORMAL)
+		self.numberRound.SetFont(self.fontNumberRound)
+
 		#Logo
 		self.logo =wx.StaticBitmap(self.panel)
 
@@ -134,6 +146,7 @@ class MyFrame(wx.Frame):
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.sizer.Add(self.logo, 0, wx.ALL|wx.CENTER, 5)
 		self.sizer.Add(self.lcdClock, 0, wx.ALL|wx.CENTER, 5)
+		self.sizer.Add(self.numberRound, 0, wx.ALL|wx.CENTER, 5)
 
 		#ButtonSizer
 		self.button_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -145,20 +158,36 @@ class MyFrame(wx.Frame):
 		self.panel.SetSizer(self.sizer)
 
 		#Update Display settings
-		self.update_display_settings()
+		self.update_display_after_settings()
 
-	def update_display_settings(self):
+		#Timer variable
+		self.current_round_number = 1
+		self.current_round_timer_in_seconds = 0
+
+	def update_display_after_settings(self):
 
 		#Background panel
 		col_stop = wx.Colour();
 		col_stop.Set(settings.config['DEFAULT']['color_stop'])
 		self.panel.SetBackgroundColour(col_stop)
 
+		#Logo image
+		self.logo.SetBitmap(wx.Bitmap(settings.config['DEFAULT']['logo'], wx.BITMAP_TYPE_ANY))
+
+		#Reset everything
+		self.reset()
+
+	def reset(self):
+
 		#Countdown label
 		self.update_countdown_label(int(settings.config['DEFAULT']['timer_in_seconds']))
 
-		#Logo image
-		self.logo.SetBitmap(wx.Bitmap(settings.config['DEFAULT']['logo'], wx.BITMAP_TYPE_ANY))
+		#Number of round
+		self.update_number_of_round(1, int(settings.config['DEFAULT']['number_of_rounds']))
+
+	def update_number_of_round(self, current_round_number, total_round_number):
+		roundformat = '{:02d}/{:02d}'.format(current_round_number, total_round_number)
+		self.numberRound.SetLabel(roundformat)
 
 	def update_countdown_label(self, seconds_left_in_second):
 		mins, secs = divmod(seconds_left_in_second, 60)
