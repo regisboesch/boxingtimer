@@ -1,5 +1,6 @@
 # First things, first. Import the wxPython package.
 import wx
+import wx.media
 import MySettings
 from enum import Enum
 
@@ -176,7 +177,13 @@ class MyFrame(wx.Frame):
 		self.current_round_timer_in_seconds = 0
 		self.timer_state = TimerState.STOP
 		self.timer_start_time_this_round = 0
-
+		
+		#Media
+		self.mc = wx.media.MediaCtrl(self.panel, style=wx.SIMPLE_BORDER)
+		self.mc.Load("bell.mp3")
+		self.mc_notify = wx.media.MediaCtrl(self.panel, style=wx.SIMPLE_BORDER)
+		self.mc_notify.Load("notify.mp3")
+		
 	def update_display_after_settings(self):
 
 		#Logo image
@@ -223,12 +230,19 @@ class MyFrame(wx.Frame):
 		timeformat = '{:02d}:{:02d}'.format(mins, secs)
 		self.lcdClock.SetLabel(timeformat)
 
+	def play_sound_bell(self):
+		self.mc.Play()
+		
+	def play_sound_notify(self):
+		self.mc_notify.Play()
+		
 	def OnPressSettingsButton(self, evt):
 		settings_frame = MyFrameSetting(self)
 		settings_frame.Show()
 
 	def OnPressStartStopButton(self, evt):
 		if self.timer_state == TimerState.STOP :
+		
 			#Start Timer
 			self.timer.Start(1000)
 
@@ -245,6 +259,9 @@ class MyFrame(wx.Frame):
 			self.timer_state = TimerState.RUN
 
 			#Disable other button ??
+			
+			#Play sound
+			self.play_sound_bell()
 		else :
 			#Stop Timer
 			self.timer.Stop()
@@ -282,6 +299,8 @@ class MyFrame(wx.Frame):
 				col = wx.Colour();
 				col.Set(settings.config['DEFAULT']['color_almost_end'])
 				self.update_background_color(col)
+				#Play sound
+				self.play_sound_notify()
 
 			if self.current_round_timer_in_seconds <= 0 and self.timer_state == TimerState.ALMOST_END:
 				self.timer_state=TimerState.END_ROUND
@@ -289,7 +308,9 @@ class MyFrame(wx.Frame):
 				col.Set(settings.config['DEFAULT']['color_pause'])
 				self.update_background_color(col)
 				self.current_round_timer_in_seconds = int(settings.config['DEFAULT']['pause_each_round_in_seconds'])
-
+				#Play sound
+				self.play_sound_bell()
+				
 		#When on Pause round
 		if self.timer_state==TimerState.END_ROUND :
 			self.current_round_timer_in_seconds = self.current_round_timer_in_seconds-1
@@ -305,6 +326,8 @@ class MyFrame(wx.Frame):
 					col = wx.Colour();
 					col.Set(settings.config['DEFAULT']['color_run'])
 					self.update_background_color(col)
+					#Play sound
+					self.play_sound_bell()
 
 		print "Updating timer state %s : time elapsed %d [s] form round %d" % (self.timer_state.name, self.current_round_timer_in_seconds, self.current_round_number)
 
