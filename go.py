@@ -8,6 +8,7 @@ class TimerState(Enum):
 	RUN = 2
 	PAUSE = 3
 	ALMOST_END = 4
+	END_ROUND = 5
 
 class MyFrameSetting(wx.Frame):
 
@@ -122,11 +123,15 @@ class MyFrame(wx.Frame):
 
 		#Buttons
 		self.startBtn = wx.Button(self.panel, wx.ID_ANY, "Start")
+		self.Bind(wx.EVT_BUTTON, self.OnPressStartStopButton, self.startBtn)
 		self.pauseBtn = wx.Button(self.panel, wx.ID_ANY, "Pause")
+		self.Bind(wx.EVT_BUTTON, self.OnPressPauseButton, self.pauseBtn)
 		self.settingsBtn = wx.Button(self.panel, wx.ID_ANY, "Settings")
 		self.Bind(wx.EVT_BUTTON, self.OnPressSettingsButton, self.settingsBtn)
 
 		#Timer
+		self.timer = wx.Timer(self)
+		self.Bind(wx.EVT_TIMER, self.on_update_timer, self.timer)
 
 		#Clock
 		self.lcdClock = wx.StaticText(self.panel, -1, "00:00", style=wx.ALIGN_CENTER)
@@ -163,13 +168,10 @@ class MyFrame(wx.Frame):
 		#Timer variable
 		self.current_round_number = 1
 		self.current_round_timer_in_seconds = 0
+		self.timer_state = TimerState.STOP
+		self.timer_start_time_this_round = 0
 
 	def update_display_after_settings(self):
-
-		#Background panel
-		col_stop = wx.Colour();
-		col_stop.Set(settings.config['DEFAULT']['color_stop'])
-		self.panel.SetBackgroundColour(col_stop)
 
 		#Logo image
 		self.logo.SetBitmap(wx.Bitmap(settings.config['DEFAULT']['logo'], wx.BITMAP_TYPE_ANY))
@@ -177,13 +179,31 @@ class MyFrame(wx.Frame):
 		#Reset everything
 		self.reset()
 
+	def update_background_color(self, colour):
+		self.panel.SetBackgroundColour(colour)
+
 	def reset(self):
 
+		#Background panel
+		col_stop = wx.Colour();
+		col_stop.Set(settings.config['DEFAULT']['color_stop'])
+		self.update_background_color(col_stop)
+
+		#Button
+		self.startBtn.SetLabel("Start")
+		self.pauseBtn.SetLabel("Pause")
+
+		#Timer Value
+		self.timer.Stop()
+		self.timer_state = TimerState.STOP
+		self.current_round_number = 1
+		self.current_round_timer_in_seconds = int(settings.config['DEFAULT']['timer_in_seconds'])
+
 		#Countdown label
-		self.update_countdown_label(int(settings.config['DEFAULT']['timer_in_seconds']))
+		self.update_countdown_label(self.current_round_timer_in_seconds)
 
 		#Number of round
-		self.update_number_of_round(1, int(settings.config['DEFAULT']['number_of_rounds']))
+		self.update_number_of_round(self.current_round_number, int(settings.config['DEFAULT']['number_of_rounds']))
 
 	def update_number_of_round(self, current_round_number, total_round_number):
 		roundformat = '{:02d}/{:02d}'.format(current_round_number, total_round_number)
@@ -197,6 +217,89 @@ class MyFrame(wx.Frame):
 	def OnPressSettingsButton(self, evt):
 		settings_frame = MyFrameSetting(self)
 		settings_frame.Show()
+
+	def OnPressStartStopButton(self, evt):
+		if self.timer_state == TimerState.STOP :
+			#Start Timer
+			self.timer.Start(1000)
+
+			#Set start time
+			self.current_round_timer_in_seconds = int(settings.config['DEFAULT']['timer_in_seconds'])
+
+			#Changing color background
+			col_stop = wx.Colour();
+			col_stop.Set(settings.config['DEFAULT']['color_run'])
+			self.update_background_color(col_stop)
+
+			#Update Label
+			self.startBtn.SetLabel("Stop")
+			self.timer_state = TimerState.RUN
+
+			#Disable other button ??
+		else :
+			#Stop Timer
+			self.timer.Stop()
+
+			self.timer_state = TimerState.STOP
+
+			#Changing background
+
+			#Update label
+			self.startBtn.SetLabel("Start")
+
+			#Reset
+			self.reset()
+
+	#TODO : save old_status
+	def OnPressPauseButton(self, evt):
+		if self.timer_state == TimerState.RUN :
+			self.timer_state = TimerState.PAUSE
+			self.pauseBtn.SetLabel("Resume")
+		else :
+			self.timer_state = TimerState.RUN
+			self.pauseBtn.SetLabel("Pause")
+
+	def on_update_timer(self, event) :
+		
+		#WHen on RUN round
+		if (self.timer_state==TimerState.RUN) or (self.timer_state==TimerState.ALMOST_END) :
+			self.current_round_timer_in_seconds = self.current_round_timer_in_seconds-1
+
+			#Checking before almost end of round
+			if (self.current_round_timer_in_seconds <= int(settings.config['DEFAULT']['notification_before_end_of_ring_in_seconds'])) and (self.timer_state==TimerState.RUN):
+				self.timer_state=TimerState.ALMOST_END
+				col = wx.Colour();
+				col.Set(settings.config['DEFAULT']['color_almost_end'])
+				self.update_background_color(col)
+
+			if self.current_round_timer_in_seconds <= 0 and self.timer_state == TimerState.ALMOST_END:
+				self.timer_state=TimerState.END_ROUND
+				col = wx.Colour();
+				col.Set(settings.config['DEFAULT']['color_pause'])
+				self.update_background_color(col)
+				self.current_round_timer_in_seconds = int(settings.config['DEFAULT']['pause_each_round_in_seconds'])
+
+		#When on Pause round
+		if self.timer_state==TimerState.END_ROUND :
+			self.current_round_timer_in_seconds = self.current_round_timer_in_seconds-1
+
+			if self.current_round_timer_in_seconds <= 0 :
+				self.current_round_number = self.current_round_number +1
+
+				if self.current_round_number > int(settings.config['DEFAULT']['number_of_rounds']) :
+					self.reset()
+				else :
+					self.current_round_timer_in_seconds = int(settings.config['DEFAULT']['timer_in_seconds'])
+					self.timer_state=TimerState.RUN
+					col = wx.Colour();
+					col.Set(settings.config['DEFAULT']['color_run'])
+					self.update_background_color(col)
+
+		print "Updating timer state %s : time elapsed %d [s] form round %d" % (self.timer_state.name, self.current_round_timer_in_seconds, self.current_round_number)
+
+		#Updating timer labels
+		self.update_number_of_round(self.current_round_number, int(settings.config['DEFAULT']['number_of_rounds']))
+		self.update_countdown_label(self.current_round_timer_in_seconds)
 
 if __name__ == "__main__":
 
