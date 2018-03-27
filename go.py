@@ -14,8 +14,6 @@ class MyFrameSetting(wx.Frame):
 
 	def __init__(self, ground_frame):
 		wx.Frame.__init__(self, None, wx.ID_ANY, "Boxygene Settings", size=(500,800))
-		self.Centre() 
-		self.Show()
 		self.panel = wx.Panel(self)
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
 		self.ground_frame = ground_frame
@@ -72,7 +70,7 @@ class MyFrameSetting(wx.Frame):
 			(self.time_rounds_second_SpinCtrl, wx.EXPAND),
 			(wx.StaticText(self.panel, -1, "Time between rounds in seconds"), wx.EXPAND),
 			(self.time_between_rounds_second_SpinCtrl, wx.EXPAND),
-			(wx.StaticText(self.panel, -1, "Notification before end of the round in seconds"), wx.EXPAND),
+			(wx.StaticText(self.panel, -1, "Notification end of round in seconds"), wx.EXPAND),
 			(self.time_notification_alost_done_rounds_second_SpinCtrl, wx.EXPAND),
 			(wx.StaticText(self.panel, -1, "Stop Color"), wx.EXPAND),
 			(self.colour_picker_stop, wx.EXPAND),
@@ -116,6 +114,12 @@ class MyFrameSetting(wx.Frame):
 
 class MyFrame(wx.Frame):
 
+	def scale_bitmap(self, bitmap, width, height):
+		image = wx.ImageFromBitmap(bitmap)
+		image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
+		result = wx.BitmapFromImage(image)
+		return result
+		
 	def __init__(self):
 		wx.Frame.__init__(self, None, wx.ID_ANY, "Boxygene Timer")
 		self.panel = wx.Panel(self)
@@ -135,11 +139,13 @@ class MyFrame(wx.Frame):
 
 		#Clock
 		self.lcdClock = wx.StaticText(self.panel, -1, "00:00", style=wx.ALIGN_CENTER)
-		self.fontLcdClock = wx.Font(440, wx.DECORATIVE, wx.ITALIC, wx.NORMAL)
+		self.lcdClock.SetForegroundColour("white")
+		self.fontLcdClock = wx.Font( wx.FontInfo(440).Bold() )
 		self.lcdClock.SetFont(self.fontLcdClock)
 
 		#Number of round
 		self.numberRound = wx.StaticText(self.panel, -1, "00:00", style=wx.ALIGN_CENTER)
+		self.numberRound.SetForegroundColour("white")
 		self.fontNumberRound = wx.Font(140, wx.DECORATIVE,  wx.NORMAL, wx.NORMAL)
 		self.numberRound.SetFont(self.fontNumberRound)
 
@@ -174,14 +180,17 @@ class MyFrame(wx.Frame):
 	def update_display_after_settings(self):
 
 		#Logo image
-		self.logo.SetBitmap(wx.Bitmap(settings.config['DEFAULT']['logo'], wx.BITMAP_TYPE_ANY))
+		bitmap = wx.Bitmap(settings.config['DEFAULT']['logo'])
+		bitmap = self.scale_bitmap(bitmap, 800, 400)
+		self.logo.SetBitmap(bitmap)
 
 		#Reset everything
 		self.reset()
 
 	def update_background_color(self, colour):
 		self.panel.SetBackgroundColour(colour)
-
+		self.panel.Refresh()
+		
 	def reset(self):
 
 		#Background panel
