@@ -114,12 +114,6 @@ class MyFrameSetting(wx.Frame):
 		self.ground_frame.update_display_after_settings()
 
 class MyFrame(wx.Frame):
-
-	def scale_bitmap(self, bitmap, width, height):
-		image = wx.ImageFromBitmap(bitmap)
-		image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-		result = wx.BitmapFromImage(image)
-		return result
 		
 	def __init__(self):
 		wx.Frame.__init__(self, None, wx.ID_ANY, "Boxygene Timer")
@@ -156,7 +150,7 @@ class MyFrame(wx.Frame):
 		# Round text
 		#Main Sizer
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
-		self.sizer.Add(self.logo, 0, wx.ALL|wx.CENTER, 5)
+		self.sizer.Add(self.logo, 1, wx.ALL|wx.CENTER, 5)
 		self.sizer.Add(self.lcdClock, 0, wx.ALL|wx.CENTER, 5)
 		self.sizer.Add(self.numberRound, 0, wx.ALL|wx.CENTER, 5)
 
@@ -179,16 +173,18 @@ class MyFrame(wx.Frame):
 		self.timer_start_time_this_round = 0
 		
 		#Media
-		self.mc = wx.media.MediaCtrl(self.panel, style=wx.SIMPLE_BORDER)
-		self.mc.Load("bell.mp3")
-		self.mc_notify = wx.media.MediaCtrl(self.panel, style=wx.SIMPLE_BORDER)
-		self.mc_notify.Load("notify.mp3")
+		try :
+			self.mc = wx.media.MediaCtrl(self.panel, style=wx.SIMPLE_BORDER)
+			self.mc.Load("bell.mp3")
+			self.mc_notify = wx.media.MediaCtrl(self.panel, style=wx.SIMPLE_BORDER)
+			self.mc_notify.Load("notify.mp3")
+		except :
+			print "No sound allowed"
 		
 	def update_display_after_settings(self):
 
 		#Logo image
 		bitmap = wx.Bitmap(settings.config['DEFAULT']['logo'])
-		bitmap = self.scale_bitmap(bitmap, 800, 400)
 		self.logo.SetBitmap(bitmap)
 
 		#Reset everything
