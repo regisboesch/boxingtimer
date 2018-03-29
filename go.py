@@ -135,7 +135,7 @@ class MyFrame(wx.Frame):
 		#Clock
 		self.lcdClock = wx.StaticText(self.panel, -1, "00:00", style=wx.ALIGN_CENTER)
 		self.lcdClock.SetForegroundColour("white")
-		self.fontLcdClock = wx.Font( wx.FontInfo(440).Bold() )
+		self.fontLcdClock = wx.Font( wx.FontInfo(240).Bold() )
 		self.lcdClock.SetFont(self.fontLcdClock)
 
 		#Number of round
@@ -150,8 +150,8 @@ class MyFrame(wx.Frame):
 		# Round text
 		#Main Sizer
 		self.sizer = wx.BoxSizer(wx.VERTICAL)
-		self.sizer.Add(self.logo, 1, wx.ALL|wx.CENTER, 5)
-		self.sizer.Add(self.lcdClock, 0, wx.ALL|wx.CENTER, 5)
+		self.sizer.Add(self.logo, 1, wx.CENTER, 5)
+		self.sizer.Add(self.lcdClock, 1, wx.ALL|wx.CENTER, 5)
 		self.sizer.Add(self.numberRound, 0, wx.ALL|wx.CENTER, 5)
 
 		#ButtonSizer
@@ -161,7 +161,7 @@ class MyFrame(wx.Frame):
 		self.button_sizer.Add(self.settingsBtn, 0, wx.ALL|wx.CENTER, 5)
 		self.sizer.Add(self.button_sizer, 0, wx.ALL|wx.CENTER, 5)
 
-		self.panel.SetSizer(self.sizer)
+		self.panel.SetSizerAndFit(self.sizer)
 
 		#Update Display settings
 		self.update_display_after_settings()
@@ -180,7 +180,7 @@ class MyFrame(wx.Frame):
 			self.mc_notify.Load("notify.mp3")
 		except :
 			print "No sound allowed"
-		
+
 	def update_display_after_settings(self):
 
 		#Logo image
