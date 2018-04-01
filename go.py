@@ -141,7 +141,7 @@ class MyFrame(wx.Frame):
 		#Number of round
 		self.numberRound = wx.StaticText(self.panel, -1, "00:00", style=wx.ALIGN_CENTER)
 		self.numberRound.SetForegroundColour("white")
-		self.fontNumberRound = wx.Font(140, wx.DECORATIVE,  wx.NORMAL, wx.NORMAL)
+		self.fontNumberRound = wx.Font(95, wx.DECORATIVE,  wx.NORMAL, wx.NORMAL)
 		self.numberRound.SetFont(self.fontNumberRound)
 
 		#Logo
